@@ -1,6 +1,10 @@
 import logging
 import logging.handlers
 
+class CustomAdapter(logging.LoggerAdapter):
+    def process(self, msg, kwargs):
+        return '[%s] %s' % (self.extra['connid'], msg), kwargs
+
 rootLogger = logging.getLogger('')
 rootLogger.setLevel(logging.DEBUG)
 socketHander = logging.handlers.SocketHandler('localhost',
@@ -18,6 +22,9 @@ logging.info('Jackdaws love my big sphinx of quartz.')
 logger1 = logging.getLogger('myapp.area1')
 logger2 = logging.getLogger('myapp.area2')
 
+adapter = CustomAdapter(logger1, {'connid': 3})
+adapter.debug('send by adapter')
+adapter.info('send by adapter too')
 logger1.debug('Quick zephyrs blow, vexing daft Jim.')
 logger1.info('How quickly daft jumping zebras vex.')
 logger2.warning('Jail zesty vixen who grabbed pay from quack.')
