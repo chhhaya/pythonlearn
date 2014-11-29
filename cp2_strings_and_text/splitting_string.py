@@ -300,3 +300,150 @@ def combine(source, maxsize):
 f = open('temp.txt', 'w')
 for part in combine(sample(), 32767):
     f.write(part)
+
+
+### 字符串中插入变量
+s = '{name} has {n} messages'
+print(s.format(name='guido', n=37))
+
+# 这都可以
+name = 'Guido'
+n = 37
+s = '{name} has {n} messages'
+print(s.format_map(vars()))
+# 'Guido has 37 messages’
+
+# 也可以在实例中
+class Info:
+    def __init__(self, name, n):
+        self.name = name
+        self.n = n
+a = Info('Guido', 37)
+s.format_map(vars(a))
+
+# 有个缺点是如果不给n的话会出错
+# 解决方法：
+# >>> del n
+# >>> class safesub(dict):
+#     def __missing__(self, key):
+#         return '{' + key + '}'
+# >>> s.format_map(safesub(vars()))
+# 'Guido has {n} messages'
+
+# sys._getframe()是获得调用栈帧，0 是当前，1 是上层
+# f_locals是当前的变量字典
+import sys
+class safesub(dict):
+    def __missing__(self, key):
+        return '{' + key + '}'
+def sub(text):
+    return text.format_map(safesub(sys._getframe(1).f_locals))
+print(sub('hello {name}'))
+print(sub('you have {n} message'))
+print(sub('color is {color}'))
+# hello Guido
+# you have 37 message
+# color is {color}
+def test(txt):
+    print(sys._getframe(0).f_locals)
+test('xx')
+# {'txt': 'xx'}
+
+
+### 格式化文本为固定列
+s = "ADAudit Plus is a web based Windows Active Directory Change " \
+    "Reporting Software that audits-tracks-reports on Windows - Active Directory," \
+    " Workstations Logon / Logoff, File Servers & Servers to help meet the most" \
+    "-needed security, audit and compliance demands."
+import textwrap
+# 70列输出
+print(textwrap.fill(s, 70))
+# 首行缩进
+print(textwrap.fill(s, 40, initial_indent='     '))
+# 后面行缩进
+print(textwrap.fill(s, 40, subsequent_indent='      '))
+import os
+#os.get_terminal_size().columns
+#  输出控制台列数
+
+
+### 处理HTML和XML实体
+s = 'as "<tag>text</tag>'
+import html
+print(s)
+print(html.escape(s))
+# as "<tag>text</tag>
+# as &quot;&lt;tag&gt;text&lt;/tag&gt;
+# 不escape引号
+print(html.escape(s, quote=False))
+# as "&lt;tag&gt;text&lt;/tag&gt;
+
+# 把文本转为ascii，把非ascii字符变成实体
+s = 'Spicy Jalapeño'
+print(s.encode('ascii', errors='xmlcharrefreplace'))
+# b'Spicy Jalape&#241;o'
+
+# 实体转为字符
+# 法1
+s = 'Spicy &quot;Jalape&#241;o&quot;'
+print(html.unescape(s))
+# Spicy "Jalapeño"
+# 法2
+t = 'The prompt is &gt;&gt;&gt;'
+from xml.sax.saxutils import unescape
+print(unescape(t))
+# The prompt is >>>
+
+
+# 标记化文本
+text = ' foo = 23 + 42 * 10'
+# 要标记成：
+tokens = [('NAME', 'foo')]
+# 用带名称的捕获组
+import re
+NAME = r'(?P<NAME>[a-zA-Z_][a-zA-Z_0-9]*)'
+NUM = r'(?P<NUM>\d+)'
+PLUS = r'(?P<PLUS>\+)'
+TIMES = r'(?P<TIMES>\*)'
+EQ = r'(?P<EQ>=)'
+WS = r'(?P<WS>\s+)'
+master_pat = re.compile('|'.join([NAME, NUM, PLUS, TIMES, EQ, WS]))
+# scanner 会生成一个scanner对象，该对象重复调用match
+# >>> scanner = mp.scanner('foo = 42')
+# >>> scanner.match()
+# <_sre.SRE_Match object; span=(0, 3), match='foo'>
+# >>> _.lastgroup, _.group()
+# ('NAME', 'foo')
+# >>> scanner.match()
+# <_sre.SRE_Match object; span=(3, 4), match=' '>
+# >>> _.lastgroup, _.group()
+# ('WS', ' ')
+# >>> scanner.match()
+# <_sre.SRE_Match object; span=(4, 5), match='='>
+# >>> _.lastgroup, _.group()
+# ('EQ', '=')
+# >>> scanner.match()
+# <_sre.SRE_Match object; span=(5, 6), match=' '>
+# >>> _.lastgroup, _.group()
+# ('WS', ' ')
+# >>> scanner.match()
+# <_sre.SRE_Match object; span=(6, 8), match='42'>
+# >>> _.lastgroup, _.group()
+# ('NUM', '42')
+# >>> scanner.match()
+
+from collections import namedtuple
+Token = namedtuple('Token', ['type', 'value'])
+
+def generate_tokens(pat, text):
+    scanner = pat.scanner(text)
+    for m in iter(scanner.match, None):
+        yield Token(m.lastgroup, m.group())
+
+for tok in generate_tokens(master_pat, 'foo = 42'):
+    print(tok)
+print('no whitespace'.center(30, '-'))
+tokens = (tok for tok in generate_tokens(master_pat, text) if tok.type != 'WS')
+for tok in tokens:
+    print(tok)
+    
