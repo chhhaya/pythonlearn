@@ -370,3 +370,94 @@ from dateutil.relativedelta import relativedelta
 # 28
 # >>> d.minutes
 # 0
+
+
+# 3.13 ##上周五的日期
+from dateutil.relativedelta import relativedelta
+from dateutil.rrule import *
+d = datetime.now()
+print(d)
+# 2014-12-06 17:04:24.502803
+print(d + relativedelta(weekday=FR))
+# 2014-12-12 17:04:55.823392 下个周五
+print(d + relativedelta(weekday=FR(-1)))
+# 2014-12-05 17:05:23.936178 上个周五
+
+
+# 3.14 ## 当月的date range
+from datetime import date
+import calendar
+
+def get_month_range(start_date=None):
+    if start_date is None:
+        start_date = date.today().replace(day=1)
+        _, days_in_month = calendar.monthrange(start_date.year, start_date.month)
+        # 0, 31
+        end_date = start_date + timedelta(days=days_in_month)
+        return (start_date, end_date)
+a_day = timedelta(days=1)
+first_day, last_day = get_month_range()
+while first_day < last_day:
+    print(first_day)
+    first_day += a_day
+# 2014-12-01
+# 2014-12-02
+# 2014-12-03
+# 2014-12-04
+# 2014-12-05
+# 2014-12-06
+# ...
+# 2014-12-31
+
+# 另一种方法：
+def date_range(start, stop, step):
+    while start < stop:
+        yield start
+        start += step
+
+for d in date_range(datetime(2014,12,12), datetime(2014, 12, 13), timedelta(hours=6)):
+    print(d)
+# 2014-12-12 00:00:00
+# 2014-12-12 06:00:00
+# 2014-12-12 12:00:00
+# 2014-12-12 18:00:00
+
+
+# 3.15 ## 字符串转datetime
+# strptime 效率不是很高
+# 可以用这种代替:
+def parse_ymd(s):
+    year_s, month_s, day_s = s.split('-')
+    return datetime(int(year_s), int(month_s), int(day_s))
+
+# 3.16 ## 时区
+from pytz import timezone
+import pytz
+d = datetime.now()
+print(d)
+# 2014-12-06 17:31:24.267926
+
+central = timezone('US/Central')
+loc_d = central.localize(d)
+print(loc_d)
+# 2014-12-06 17:33:25.684649-06:00
+
+# 印度加尔各答时间
+band_d = loc_d.astimezone(timezone('Asia/Kolkata'))
+print(band_d)
+# 2014-12-07 05:04:54.805397+05:30
+
+later = central.normalize(loc_d + timedelta(minutes=30))
+print(later)
+# 2014-12-06 18:09:48.617389-06:00
+
+# UTC时间
+utc_d = loc_d.astimezone(pytz.utc)
+print(utc_d)
+# 2014-12-06 23:39:48.617389+00:00
+
+# 得到时区名：
+# >>> pytz.country_timezones('CN')
+# ['Asia/Shanghai', 'Asia/Urumqi']
+# >>> pytz.country_timezones('IN')
+# ['Asia/Kolkata']
