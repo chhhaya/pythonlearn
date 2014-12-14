@@ -4,8 +4,10 @@ class People:
         self.age = age
         self.sex = sex
 
+    def __call__(self, xx):
+        print("{} -- {}".format(self.name, xx))
+
 p1 = People('chhaya', 12, 'M')
-print(vars(p1))
-# {'age': 12, 'name': 'chhaya', 'sex': 'M'}
-print(type(p1).__name__)
-# People
+
+p1('haohao')
+# chhaya -- haohao
