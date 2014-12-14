@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='us-ascii'?>
+<stop>
+    <id>14789</id>
+    <nm>Clark &amp; Balmoral</nm>
+    <spam>This is a test</spam><pre>
+        <pt>5 Min</pt>
+        <fd>Howard</fd>
+        <v>1278</v>
+        <rn>22</rn>
+    </pre>
+    <pre>
+        <pt>15 Min</pt>
+        <fd>Howard</fd>
+        <v>1678</v>
+        <rn>22</rn>
+    </pre>
+</stop>
