@@ -16,4 +16,4 @@ class TestURLPrint(TestCase):
             self.assertEqual(fake_out.getvalue(), expected_url)
 
 if __name__ == '__main__':
-    unittest.main(verbosity=1)                              QQ
+    unittest.main(verbosity=1)                              
